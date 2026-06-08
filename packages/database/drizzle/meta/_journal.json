@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1779229360118,
-      "tag": "0000_zippy_domino",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1779274388143,
-      "tag": "0001_opposite_saracen",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1779369070639,
-      "tag": "0002_strange_moondragon",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1779448045177,
-      "tag": "0003_peaceful_oracle",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1779479813941,
-      "tag": "0004_form_submissions",
+      "when": 1780945299079,
+      "tag": "0000_small_typhoid_mary",
       "breakpoints": true
     }
   ]
