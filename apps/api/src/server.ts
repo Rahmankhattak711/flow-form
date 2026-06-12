@@ -2,7 +2,6 @@ import { logger } from "@repo/logger";
 import cors from "cors";
 import express from "express";
 
-import { apiReference } from "@scalar/express-api-reference";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { createOpenApiExpressMiddleware, generateOpenApiDocument } from "trpc-to-openapi";
 
@@ -43,7 +42,10 @@ app.get("/openapi.json", (req, res) => {
 });
 
 logger.debug(`docs: ${env.BASE_URL}/docs`);
-app.use("/docs", apiReference({ url: "/openapi.json" }));
+app.use("/docs", async (req, res, next) => {
+  const { apiReference } = await import("@scalar/express-api-reference");
+  return apiReference({ url: "/openapi.json" })(req, res, next);
+});
 
 app.use(
   "/api",
