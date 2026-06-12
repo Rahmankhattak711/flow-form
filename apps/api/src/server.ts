@@ -22,9 +22,7 @@ app.use(
   cors({
     origin: [
       'https://flow-form-web.vercel.app',
-      'https://localhost:3000',
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
+      'https://repoapi-production-ccb1.up.railway.app',
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
