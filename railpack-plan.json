@@ -1,0 +1,9 @@
+{
+  "build": {
+    "buildCommand": "pnpm run build",
+    "outputDirectory": "apps/api/dist"
+  },
+  "start": {
+    "startCommand": "node apps/api/dist/index.js"
+  }
+}
