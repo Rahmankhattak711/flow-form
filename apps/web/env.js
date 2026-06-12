@@ -12,7 +12,8 @@ export const env = createEnv({
   },
 
   runtimeEnv: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL || "https://repoapi-production-ccb1.up.railway.app",
   },
 
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
