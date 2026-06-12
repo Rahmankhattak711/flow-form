@@ -25,8 +25,8 @@ import {
   getSubmissionCountInput,
   publishFormInput,
   submitFormInput,
-  updateForm as updateFormSchema,
   updateFormFieldInput,
+  updateForm as updateFormSchema,
 } from "./model";
 
 class FormService {
