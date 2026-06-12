@@ -20,7 +20,12 @@ const openApiDocument = generateOpenApiDocument(serverRouter, {
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin:[
+      'https://flow-form-web.vercel.app',
+      'https://localhost:3000',
+    ],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
     credentials: true,
   }),
 );
