@@ -55,7 +55,7 @@ export default function DashboardLayout({
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "My Forms", href: "/dashboard/forms", icon: ClipboardList },
+    { name: "Forms", href: "/dashboard/forms", icon: ClipboardList },
   ];
 
   const getInitials = (name: string) => {
@@ -73,11 +73,11 @@ export default function DashboardLayout({
       : "text-neutral-600 hover:text-orange-600 hover:bg-orange-50/50 border-transparent";
 
   return (
-    <div className="min-h-screen w-full bg-[#fafaf9] text-neutral-900 flex flex-col md:flex-row relative">
+    <div className="h-screen w-full bg-[#fafaf9] text-neutral-900 flex flex-col md:flex-row relative">
       <div className="pointer-events-none absolute top-0 right-0 w-96 h-96 bg-orange-200/30 rounded-full blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 left-0 w-80 h-80 bg-amber-100/40 rounded-full blur-3xl" />
 
-      <aside className="hidden md:flex flex-col w-64 border-r border-orange-100 bg-white/90 backdrop-blur-md p-6 shrink-0 z-20 shadow-sm">
+      <aside className="hidden md:flex flex-col w-64 border-r border-orange-100 bg-white/90 backdrop-blur-md p-6 shrink-0 z-10 shadow-sm">
         <Link href="/dashboard" className="flex items-center gap-2 font-extrabold text-2xl mb-10 text-neutral-900">
           <FormInput className="w-7 h-7 text-orange-500 stroke-[2.5]" />
           <span>

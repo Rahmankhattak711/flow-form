@@ -1,27 +1,28 @@
 "use client";
 
-import React, { useState } from "react";
-import { useUser } from "~/hooks/api/auth";
-import { useGetAllForms, useCreateForm, useGetSubmissionStats } from "~/hooks/api/form";
-import Link from "next/link";
-import { useForm, SubmitHandler } from "react-hook-form";
-import { toast } from "sonner";
-import { fromDatetimeLocalValue } from "~/lib/form-dates";
-import { 
-  Plus, 
-  FileText, 
-  ArrowRight, 
-  Calendar, 
-  Users, 
-  Percent, 
-  TrendingUp,
-  X,
-  Loader2,
-  Sparkles,
+import {
+  ArrowRight,
+  Calendar,
   ClipboardList,
-  Share2,
   Copy,
+  FileText,
+  Loader2,
+  Percent,
+  Plus,
+  Share2,
+  Sparkles,
+  TrendingUp,
+  Users,
+  X,
 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { useUser } from "~/hooks/api/auth";
+import { useCreateForm, useCreateFormField, useGetAllForms, useGetSubmissionStats } from "~/hooks/api/form";
+import { fromDatetimeLocalValue } from "~/lib/form-dates";
+import { FormTemplate, formTemplates } from "./templates/template";
 
 interface CreateFormInputs {
   title: string;
@@ -35,8 +36,10 @@ export default function DashboardPage() {
   const { data: forms, isLoading } = useGetAllForms();
   const { data: submissionStats } = useGetSubmissionStats();
   const { mutateAsync: createFormAsync } = useCreateForm();
-  
+  const createFormField = useCreateFormField();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate | null>(null);
 
   const {
     register,
@@ -59,14 +62,33 @@ export default function DashboardPage() {
         return;
       }
 
-      await createFormAsync({
-        title: data.title,
-        description: data.description || undefined,
+      const createdForm = await createFormAsync({
+        title: selectedTemplate ? selectedTemplate.title : data.title,
+        description: selectedTemplate ? selectedTemplate.description : data.description || undefined,
         startDate: fromDatetimeLocalValue(data.startDate) ?? null,
         endDate: fromDatetimeLocalValue(data.endDate) ?? null,
       });
+
+      if (selectedTemplate && createdForm?.id) {
+        await Promise.all(
+          selectedTemplate.fields.map((field) =>
+            createFormField.mutateAsync({
+              formId: createdForm.id,
+              label: field.label,
+              labelKey: field.labelKey,
+              type: field.type,
+              placeholder: field.placeholder,
+              required: field.required,
+              order: field.order,
+              options: field.options,
+            }),
+          ),
+        );
+      }
+
       toast.success("Form created successfully!");
       setIsModalOpen(false);
+      setSelectedTemplate(null);
       reset();
     } catch (err: any) {
       toast.error("Failed to create form", {
@@ -75,7 +97,7 @@ export default function DashboardPage() {
     }
   };
 
-  const recentForms = forms ? [...forms].slice(0, 3) : [];
+  const recentForms = forms ? [...forms].slice(0,6) : [];
 
   // Calculate stats
   const totalForms = forms?.length || 0;
@@ -162,7 +184,7 @@ export default function DashboardPage() {
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* Recent Forms List */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
@@ -198,8 +220,8 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-4">
               {recentForms.map((form) => (
-                <div 
-                  key={form.id} 
+                <div
+                  key={form.id}
                   className="p-6 rounded-2xl chai-card border border-slate-850 hover:border-orange-300 transition duration-300 flex items-center justify-between gap-4"
                 >
                   <div className="min-w-0 flex-1">
@@ -266,8 +288,8 @@ export default function DashboardPage() {
         {/* Sidebar Info Panel */}
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-neutral-900">Tips & Resources</h2>
-          
-          <div className="p-6 rounded-2xl bg-gradient-to-br from-orange-50 via-amber-50 to-white border border-orange-500/10 relative overflow-hidden">
+
+          <div className="p-6 rounded-2xl bg-linear-to-br from-orange-50 via-amber-50 to-white border border-orange-500/10 relative overflow-hidden">
             <div className="absolute -top-12 -right-12 w-28 h-28 bg-orange-500/20 rounded-full blur-2xl pointer-events-none" />
             <h3 className="text-md font-bold text-neutral-900 flex items-center gap-2">
               <Share2 className="w-4 h-4 text-orange-500" />
@@ -283,7 +305,7 @@ export default function DashboardPage() {
             <p className="text-neutral-600 text-sm mt-2 leading-relaxed">
               Unlock pre-designed form structures for feedback collection, contact forms, sign-up flows, and customer surveys.
             </p>
-            <button 
+            <button
               onClick={() => setIsModalOpen(true)}
               className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition mt-4 flex items-center gap-1.5"
             >
@@ -297,8 +319,8 @@ export default function DashboardPage() {
 
       {/* Creation Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white border border-orange-100 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm overflow-y-auto  flex  items-center justify-center z-50 p-8 ">
+          <div className="bg-white border border-orange-100 rounded-2xl min-h-screen shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="px-6 py-5 border-b border-orange-100 flex items-center justify-between">
               <h3 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
@@ -315,7 +337,48 @@ export default function DashboardPage() {
 
             {/* Modal Body */}
             <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-              
+
+              {/* Template picker */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-sm font-semibold text-neutral-900">Choose a template</h4>
+                    <p className="text-xs text-neutral-500">Start with a prebuilt form structure.</p>
+                  </div>
+                  {selectedTemplate && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTemplate(null)}
+                      className="text-xs font-semibold text-orange-500 hover:text-orange-600 transition"
+                    >
+                      Clear template
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {formTemplates.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => setSelectedTemplate(template)}
+                      className={`rounded-2xl border p-4 text-left transition ${
+                        selectedTemplate?.id === template.id
+                          ? "border-orange-400 bg-orange-50"
+                          : "border-neutral-200 bg-white hover:border-orange-300"
+                      }`}
+                    >
+                      <h5 className="text-sm font-bold text-neutral-900">{template.title}</h5>
+                      <p className="text-xs text-neutral-500 mt-2 line-clamp-2">{template.description}</p>
+                    </button>
+                  ))}
+                </div>
+                {selectedTemplate && (
+                  <div className="rounded-2xl border border-orange-100 bg-orange-50 p-4 text-sm text-neutral-700">
+                    Using the <span className="font-semibold">{selectedTemplate.title}</span> template. You can still customize the title and description.
+                  </div>
+                )}
+              </div>
+
               {/* Title */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-neutral-700 block" htmlFor="title-input">
@@ -324,8 +387,8 @@ export default function DashboardPage() {
                 <input
                   id="title-input"
                   type="text"
-                  {...register("title", { required: "Title is required" })}
-                  placeholder="e.g. Customer Feedback Survey"
+                  {...register("title", { required: !selectedTemplate && "Title is required" })}
+                  placeholder={selectedTemplate ? selectedTemplate.title : "e.g. Customer Feedback Survey"}
                   className="w-full bg-white border border-orange-100 rounded-xl py-3 px-4 text-neutral-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition"
                 />
                 {errors.title && (
@@ -342,7 +405,7 @@ export default function DashboardPage() {
                   id="description-input"
                   rows={3}
                   {...register("description")}
-                  placeholder="e.g. Help us improve by answering these few questions."
+                  placeholder={selectedTemplate ? selectedTemplate.description : "e.g. Help us improve by answering these few questions."}
                   className="w-full bg-white border border-orange-100 rounded-xl py-3 px-4 text-neutral-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition resize-none"
                 />
               </div>
