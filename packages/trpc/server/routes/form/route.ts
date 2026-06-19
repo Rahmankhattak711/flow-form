@@ -1,30 +1,31 @@
-import z from "zod";
 import { TRPCError } from "@trpc/server";
-import { formService } from "../../services";
 import { emptyInputModel } from "../../schema";
+import { formService } from "../../services";
 import { authProcedure, publicProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 import {
-  createFormFieldInputModel,
-  createFormFieldOutputModel,
-  createFormInputModel,
-  createFormOutputModel,
-  deleteFormFieldInputModel,
-  updateFormInputModel,
-  updateFormOutputModel,
-  getFormFieldInputModel,
-  getFormFieldOutputModel,
-  getFormFieldsInputModel,
-  getFormFieldsOutputModel,
-  getPublicFormInputModel,
-  getPublicFormOutputModel,
-  getSubmissionStatsOutputModel,
-  listFormsOutputModel,
-  publishFormInputModel,
-  publishFormOutputModel,
-  submitFormInputModel,
-  submitFormOutputModel,
-  updateFormFieldInputModel,
+    createFormFieldInputModel,
+    createFormFieldOutputModel,
+    createFormInputModel,
+    createFormOutputModel,
+    deleteFormFieldInputModel,
+    getFormFieldInputModel,
+    getFormFieldOutputModel,
+    getFormFieldsInputModel,
+    getFormFieldsOutputModel,
+    getFormSubmissionsInputModel,
+    getFormSubmissionsOutputModel,
+    getPublicFormInputModel,
+    getPublicFormOutputModel,
+    getSubmissionStatsOutputModel,
+    listFormsOutputModel,
+    publishFormInputModel,
+    publishFormOutputModel,
+    submitFormInputModel,
+    submitFormOutputModel,
+    updateFormFieldInputModel,
+    updateFormInputModel,
+    updateFormOutputModel,
 } from "./model";
 
 function toTrpcError(error: unknown): TRPCError {
@@ -171,6 +172,25 @@ export const formRouter = router({
     .output(getSubmissionStatsOutputModel)
     .query(async ({ ctx }) => {
       return formService.getSubmissionCountForUser({ userId: ctx.user.id });
+    }),
+
+  getFormSubmissions: authProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: getPath("/getFormSubmissions"),
+        tags: TAGS,
+      },
+    })
+    .input(getFormSubmissionsInputModel)
+    .output(getFormSubmissionsOutputModel)
+    .query(async ({ input, ctx }) => {
+      try {
+        const submissions = await formService.getFormSubmissions({ formId: input.formId, userId: ctx.user.id });
+        return submissions.map((s) => ({ id: s.id, answers: s.answers, submittedAt: s.submittedAt.toISOString() }));
+      } catch (error) {
+        throw toTrpcError(error);
+      }
     }),
 
   getPublicForm: publicProcedure

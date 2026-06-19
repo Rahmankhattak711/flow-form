@@ -3,30 +3,30 @@ import { formsTable } from "@repo/database/models/form";
 import { formFieldsTable } from "@repo/database/models/form-field";
 import { formSubmissionsTable } from "@repo/database/models/form-submission";
 import {
-  CreateFormInputFieldType,
-  CreatrFormInputType,
-  DeleteFormFieldInputType,
-  GetAllFormsInputType,
-  GetFormByIdInputType,
-  GetFormFieldInputType,
-  GetFormFieldsInputType,
-  GetSubmissionCountInputType,
-  PublishFormInputType,
-  SubmitFormInputType,
-  UpdateFormFieldInputType,
-  UpdateFormInputType,
-  createForm,
-  createFormInputField,
-  deleteFormFieldInput,
-  getAllFormsInput,
-  getFormByIdInput,
-  getFormFieldInput,
-  getFormFieldsInput,
-  getSubmissionCountInput,
-  publishFormInput,
-  submitFormInput,
-  updateFormFieldInput,
-  updateForm as updateFormSchema,
+    CreateFormInputFieldType,
+    CreatrFormInputType,
+    DeleteFormFieldInputType,
+    GetAllFormsInputType,
+    GetFormByIdInputType,
+    GetFormFieldInputType,
+    GetFormFieldsInputType,
+    GetSubmissionCountInputType,
+    PublishFormInputType,
+    SubmitFormInputType,
+    UpdateFormFieldInputType,
+    UpdateFormInputType,
+    createForm,
+    createFormInputField,
+    deleteFormFieldInput,
+    getAllFormsInput,
+    getFormByIdInput,
+    getFormFieldInput,
+    getFormFieldsInput,
+    getSubmissionCountInput,
+    publishFormInput,
+    submitFormInput,
+    updateFormFieldInput,
+    updateForm as updateFormSchema,
 } from "./model";
 
 class FormService {
@@ -333,6 +333,25 @@ class FormService {
     }
 
     return { id: result[0].id };
+  }
+
+  public async getFormSubmissions(payload: { formId: string; userId: string }) {
+    const { formId, userId } = payload;
+
+    const [form] = await db
+      .select({ id: formsTable.id, createdBy: formsTable.createdBy })
+      .from(formsTable)
+      .where(and(eq(formsTable.id, formId), eq(formsTable.createdBy, userId)));
+
+    if (!form) throw new Error("Form not found or you do not have permission");
+
+    const submissions = await db
+      .select({ id: formSubmissionsTable.id, answers: formSubmissionsTable.answers, submittedAt: formSubmissionsTable.submittedAt })
+      .from(formSubmissionsTable)
+      .where(eq(formSubmissionsTable.formId, formId))
+      .orderBy(formSubmissionsTable.submittedAt);
+
+    return submissions;
   }
 }
 

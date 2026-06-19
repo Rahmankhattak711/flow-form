@@ -116,6 +116,18 @@ export const useGetSubmissionStats = () => {
   return { data, error, isLoading, isError, isSuccess, status };
 };
 
+export const useGetFormSubmissions = (formId: string | null) => {
+  const { data, error, isLoading, isError, isSuccess, status, refetch } =
+    trpc.form.getFormSubmissions.useQuery(
+      { formId: formId ?? "" },
+      {
+        enabled: !!formId,
+      },
+    );
+
+  return { data, error, isLoading, isError, isSuccess, status, refetch };
+};
+
 export const useGetPublicForm = (formId: string | null) => {
   const { data, error, isLoading, isError, isSuccess, status, refetch } =
     trpc.form.getPublicForm.useQuery(
