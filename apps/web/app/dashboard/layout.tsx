@@ -56,6 +56,7 @@ export default function DashboardLayout({
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Forms", href: "/dashboard/forms", icon: ClipboardList },
+    { name: "Responses", href: "/dashboard/responses", icon: FormInput },
   ];
 
   const getInitials = (name: string) => {

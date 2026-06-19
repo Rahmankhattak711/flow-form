@@ -69,6 +69,18 @@ export const getSubmissionStatsOutputModel = z.object({
   byFormId: z.record(z.string(), z.number().int()),
 });
 
+export const getFormSubmissionsInputModel = z.object({
+  formId: z.string().uuid().describe("Form id"),
+});
+
+export const getFormSubmissionOutputModel = z.object({
+  id: z.string().uuid().describe("Submission id"),
+  answers: z.record(z.string(), z.union([z.string(), z.array(z.string())])),
+  submittedAt: z.string().describe("ISO timestamp"),
+});
+
+export const getFormSubmissionsOutputModel = z.array(getFormSubmissionOutputModel);
+
 export const createFormFieldInputModel = z.object({
   formId: z.string().uuid().describe("Form id"),
   labelKey: z.string().max(100).describe("Label key"),
