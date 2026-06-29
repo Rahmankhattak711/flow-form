@@ -17,11 +17,15 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { FormStatusPieChart } from "~/components/dashboard/form-status-pie-chart";
+import { FormsCreatedChart } from "~/components/dashboard/forms-created-chart";
+import { ResponsesBarChart } from "~/components/dashboard/responses-bar-chart";
 import { useUser } from "~/hooks/api/auth";
 import { useCreateForm, useCreateFormField, useGetAllForms, useGetSubmissionStats } from "~/hooks/api/form";
+import { buildFormStatusChart, buildFormsCreatedChart, buildResponsesByFormChart } from "~/lib/chart-data";
 import { fromDatetimeLocalValue } from "~/lib/form-dates";
 import { FormTemplate, formTemplates } from "./templates/template";
 
@@ -106,6 +110,13 @@ export default function DashboardPage() {
   const publishedCount = forms?.filter((f) => f.published).length ?? 0;
   const avgCompletionRate =
     totalForms > 0 ? `${Math.round((publishedCount / totalForms) * 100)}%` : "0%";
+
+  const responsesChartData = useMemo(
+    () => buildResponsesByFormChart(forms, submissionStats?.byFormId),
+    [forms, submissionStats?.byFormId],
+  );
+  const formStatusChartData = useMemo(() => buildFormStatusChart(forms), [forms]);
+  const formsCreatedChartData = useMemo(() => buildFormsCreatedChart(forms), [forms]);
 
   const stats = [
     {
@@ -197,6 +208,15 @@ export default function DashboardPage() {
           );
         })}
       </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+        <div className="xl:col-span-2">
+          <ResponsesBarChart data={responsesChartData} />
+        </div>
+        <FormStatusPieChart data={formStatusChartData} />
+      </div>
+      <FormsCreatedChart data={formsCreatedChartData} />
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -324,25 +344,6 @@ export default function DashboardPage() {
             <p className="text-neutral-600 text-xs leading-relaxed">
               Publish your form, copy the share link, and send it to anyone — they can fill and submit without signing in.
             </p>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-white border border-orange-100 hover:border-orange-200 hover:shadow-md hover:shadow-orange-50 transition-all duration-300 group">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
-                <Zap className="w-4 h-4" />
-              </div>
-              <h3 className="text-sm font-bold text-neutral-900">Form Templates</h3>
-            </div>
-            <p className="text-neutral-500 text-xs mt-1 leading-relaxed">
-              Unlock pre-designed form structures for feedback collection, contact forms, sign-up flows, and customer surveys.
-            </p>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="text-xs font-bold text-orange-500 hover:text-orange-600 transition mt-4 flex items-center gap-1.5 group"
-            >
-              Browse templates
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-            </button>
           </div>
 
           <div className="p-5 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 relative overflow-hidden">

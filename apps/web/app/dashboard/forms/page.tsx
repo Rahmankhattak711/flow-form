@@ -16,6 +16,7 @@ import {
 } from "~/hooks/api/form";
 import { fromDatetimeLocalValue, formatFormDateRange, toDatetimeLocalValue } from "~/lib/form-dates";
 import { FormFieldInput } from "~/components/forms/form-field-input";
+import { FormTemplate, formTemplates } from "~/app/dashboard/templates/template";
 import { toast } from "sonner";
 import {
   Copy,
@@ -110,6 +111,7 @@ function FormsPageContent() {
   const [formStartDate, setFormStartDate] = useState("");
   const [formEndDate, setFormEndDate] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate | null>(null);
 
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
@@ -158,29 +160,72 @@ function FormsPageContent() {
 
   async function handleCreateForm(e: React.FormEvent) {
     e.preventDefault();
+    const title = formTitle.trim() || selectedTemplate?.title;
+    if (!title) {
+      toast.error("Form title is required");
+      return;
+    }
     try {
       if (formStartDate && formEndDate && new Date(formEndDate) <= new Date(formStartDate)) {
         toast.error("End date must be after start date");
         return;
       }
       const res = await createForm.mutateAsync({
-        title: formTitle,
-        description: formDescription || undefined,
+        title,
+        description: formDescription || selectedTemplate?.description || undefined,
         startDate: fromDatetimeLocalValue(formStartDate) ?? null,
         endDate: fromDatetimeLocalValue(formEndDate) ?? null,
       });
+
+      if (selectedTemplate && res?.id) {
+        await Promise.all(
+          selectedTemplate.fields.map((field) =>
+            createField.mutateAsync({
+              formId: res.id,
+              label: field.label,
+              labelKey: field.labelKey,
+              type: field.type,
+              placeholder: field.placeholder,
+              required: field.required,
+              order: field.order,
+              options: field.options,
+            }),
+          ),
+        );
+      }
+
+      const templateName = selectedTemplate?.title;
       setFormTitle("");
       setFormDescription("");
       setFormStartDate("");
       setFormEndDate("");
+      setSelectedTemplate(null);
       setShowCreateForm(false);
       if (res?.id) {
         setSelectedFormId(res.id);
-        toast.success("Form created!");
+        toast.success(templateName ? `Form created from "${templateName}" template!` : "Form created!");
       }
     } catch {
       toast.error("Failed to create form");
     }
+  }
+
+  function applyTemplate(template: FormTemplate) {
+    setSelectedTemplate(template);
+    setFormTitle(template.title);
+    setFormDescription(template.description);
+    setShowCreateForm(true);
+  }
+
+  function closeCreateForm() {
+    setShowCreateForm(false);
+    setSelectedTemplate(null);
+  }
+
+  function clearSelectedTemplate() {
+    setSelectedTemplate(null);
+    setFormTitle("");
+    setFormDescription("");
   }
 
   async function handleCreateField(e: React.FormEvent) {
@@ -422,19 +467,57 @@ function FormsPageContent() {
                   <h2 className="text-sm font-bold text-neutral-900">New Form</h2>
                 </div>
                 <button
-                  onClick={() => setShowCreateForm(false)}
+                  onClick={closeCreateForm}
                   className="text-neutral-400 hover:text-neutral-700 p-1 rounded-lg hover:bg-neutral-100 transition"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <form onSubmit={handleCreateForm} className="p-4 space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="text-xs font-semibold text-neutral-500">Template</label>
+                    {selectedTemplate && (
+                      <button
+                        type="button"
+                        onClick={clearSelectedTemplate}
+                        className="text-[10px] font-semibold text-orange-500 hover:text-orange-600"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 max-h-52 overflow-y-auto pr-1">
+                    {formTemplates.map((template) => (
+                      <button
+                        key={template.id}
+                        type="button"
+                        onClick={() => applyTemplate(template)}
+                        className={`rounded-xl border p-3 text-left transition ${
+                          selectedTemplate?.id === template.id
+                            ? "border-orange-400 bg-orange-50 shadow-sm"
+                            : "border-neutral-200 bg-white hover:border-orange-300 hover:bg-orange-50/40"
+                        }`}
+                      >
+                        <p className="text-xs font-bold text-neutral-900">{template.title}</p>
+                        <p className="text-[10px] text-neutral-500 mt-0.5 line-clamp-2">{template.description}</p>
+                        <p className="text-[10px] text-orange-500 mt-1 font-medium">{template.fields.length} fields</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {selectedTemplate && (
+                  <div className="rounded-xl border border-orange-200 bg-orange-50 p-2.5 text-[10px] text-neutral-700 flex items-start gap-2">
+                    <Sparkles className="w-3 h-3 text-orange-500 mt-0.5 shrink-0" />
+                    Using <span className="font-bold text-orange-600">{selectedTemplate.title}</span>. You can still edit the title and dates below.
+                  </div>
+                )}
                 <input
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  placeholder="Form title *"
+                  placeholder={selectedTemplate ? selectedTemplate.title : "Form title *"}
                   className={inputClass}
-                  required
+                  required={!selectedTemplate}
                 />
                 <textarea
                   value={formDescription}
@@ -465,15 +548,15 @@ function FormsPageContent() {
                 </div>
                 <button
                   type="submit"
-                  disabled={createForm.status === "pending"}
+                  disabled={createForm.status === "pending" || createField.status === "pending"}
                   className="w-full rounded-xl chai-gradient-bg text-white font-bold py-2.5 text-sm transition hover:opacity-90 shadow-sm shadow-orange-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {createForm.status === "pending" ? (
+                  {createForm.status === "pending" || createField.status === "pending" ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Plus className="w-4 h-4" />
                   )}
-                  Create Form
+                  {selectedTemplate ? "Create from template" : "Create Form"}
                 </button>
               </form>
             </div>
@@ -483,21 +566,52 @@ function FormsPageContent() {
         {/* ── Main Panel ── */}
         <div className="lg:col-span-8 xl:col-span-9 space-y-5">
           {!selectedFormId ? (
-            <div className="rounded-2xl border-2 border-dashed border-orange-200 bg-gradient-to-br from-orange-50/60 to-amber-50/30 p-16 text-center flex flex-col items-center">
-              <div className="w-16 h-16 rounded-2xl bg-white border border-orange-200 flex items-center justify-center text-orange-400 mb-5 shadow-sm">
-                <Share2 className="w-8 h-8" />
+            <div className="space-y-6">
+              <div className="rounded-2xl border-2 border-dashed border-orange-200 bg-gradient-to-br from-orange-50/60 to-amber-50/30 p-16 text-center flex flex-col items-center">
+                <div className="w-16 h-16 rounded-2xl bg-white border border-orange-200 flex items-center justify-center text-orange-400 mb-5 shadow-sm">
+                  <Share2 className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-neutral-700">Select or create a form</h3>
+                <p className="text-neutral-500 text-sm mt-2 max-w-md">
+                  Choose a form from the sidebar to add fields, preview it, and get a shareable link for respondents.
+                </p>
+                <button
+                  onClick={() => setShowCreateForm(true)}
+                  className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 chai-gradient-bg text-white font-bold rounded-xl shadow-md shadow-orange-500/20 text-sm hover:opacity-90 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create blank form
+                </button>
               </div>
-              <h3 className="text-lg font-bold text-neutral-700">Select or create a form</h3>
-              <p className="text-neutral-500 text-sm mt-2 max-w-md">
-                Choose a form from the sidebar to add fields, preview it, and get a shareable link for respondents.
-              </p>
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 chai-gradient-bg text-white font-bold rounded-xl shadow-md shadow-orange-500/20 text-sm hover:opacity-90 transition"
-              >
-                <Plus className="w-4 h-4" />
-                Create your first form
-              </button>
+
+              <section className="rounded-2xl border border-orange-100 bg-white shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-orange-50 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-orange-500" />
+                  <div>
+                    <h2 className="text-sm font-bold text-neutral-900">Start from a template</h2>
+                    <p className="text-xs text-neutral-500 mt-0.5">Pre-built forms with fields ready to customize and publish.</p>
+                  </div>
+                </div>
+                <div className="p-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {formTemplates.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => applyTemplate(template)}
+                      className="rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50/40 to-white p-5 text-left hover:border-orange-300 hover:shadow-md hover:shadow-orange-100/60 transition-all duration-200 group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-white border border-orange-200 flex items-center justify-center text-orange-500 mb-3 group-hover:scale-105 transition-transform">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-sm font-bold text-neutral-900">{template.title}</h3>
+                      <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">{template.description}</p>
+                      <p className="text-[10px] font-semibold text-orange-600 mt-3 uppercase tracking-wider">
+                        {template.fields.length} fields included
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </section>
             </div>
           ) : (
             <>

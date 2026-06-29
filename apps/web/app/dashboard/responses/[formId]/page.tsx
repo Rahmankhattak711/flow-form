@@ -4,7 +4,10 @@ import type { RouterOutputs } from "@repo/trpc/client";
 import { ArrowLeft, FileText, RefreshCw, Users, Calendar, CheckCircle2, Clock, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useMemo } from "react";
+import { SubmissionsTimelineChart } from "~/components/dashboard/submissions-timeline-chart";
 import { useGetAllForms, useGetFormFields, useGetFormSubmissions, useGetSubmissionStats, useDeleteFormSubmission } from "~/hooks/api/form";
+import { buildSubmissionsTimeline } from "~/lib/chart-data";
 import { toast } from "sonner";
 
 type ResponseField = RouterOutputs["form"]["getFormFields"][number];
@@ -39,6 +42,11 @@ export default function ResponsesPage() {
       : [];
 
   const columnCount = 3 + columns.length;
+
+  const submissionsTimelineData = useMemo(
+    () => buildSubmissionsTimeline(submissions),
+    [submissions],
+  );
 
   const deleteSubmission = useDeleteFormSubmission();
 
@@ -152,6 +160,8 @@ export default function ResponsesPage() {
           );
         })}
       </div>
+
+      <SubmissionsTimelineChart data={submissionsTimelineData} />
 
       {/* Submission Table */}
       <div className="rounded-2xl bg-white border border-orange-100 overflow-hidden shadow-sm">
