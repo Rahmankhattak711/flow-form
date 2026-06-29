@@ -9,6 +9,10 @@ import {
     createFormInputModel,
     createFormOutputModel,
     deleteFormFieldInputModel,
+    deleteFormInputModel,
+    deleteFormOutputModel,
+    deleteFormSubmissionInputModel,
+    deleteFormSubmissionOutputModel,
     getFormFieldInputModel,
     getFormFieldOutputModel,
     getFormFieldsInputModel,
@@ -359,4 +363,50 @@ export const formRouter = router({
       const { id } = await formService.deleteFormField(input);
       return { id };
     }),
+
+  deleteForm: authProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: getPath("/deleteForm"),
+        tags: TAGS,
+      },
+    })
+    .input(deleteFormInputModel)
+    .output(deleteFormOutputModel)
+    .mutation(async ({ input, ctx }) => {
+      try {
+        const { id } = await formService.deleteForm({
+          formId: input.formId,
+          userId: ctx.user.id,
+        });
+        return { id };
+      } catch (error) {
+        throw toTrpcError(error);
+      }
+    }),
+
+  deleteFormSubmission: authProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: getPath("/deleteFormSubmission"),
+        tags: TAGS,
+      },
+    })
+    .input(deleteFormSubmissionInputModel)
+    .output(deleteFormSubmissionOutputModel)
+    .mutation(async ({ input, ctx }) => {
+      try {
+        const { id } = await formService.deleteFormSubmission({
+          submissionId: input.submissionId,
+          formId: input.formId,
+          userId: ctx.user.id,
+        });
+        return { id };
+      } catch (error) {
+        throw toTrpcError(error);
+      }
+    }),
 });
+

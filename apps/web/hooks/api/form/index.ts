@@ -147,3 +147,30 @@ export const useSubmitForm = () => {
 
   return { mutateAsync, mutate, error, failureCount, isError, isSuccess, status };
 };
+
+export const useDeleteForm = () => {
+  const trpcContext = trpc.useUtils();
+
+  const { mutateAsync, mutate, error, failureCount, isError, isSuccess, status } =
+    trpc.form.deleteForm.useMutation({
+      onSuccess: async () => {
+        await trpcContext.form.invalidate();
+      },
+    });
+
+  return { mutateAsync, mutate, error, failureCount, isError, isSuccess, status };
+};
+
+export const useDeleteFormSubmission = () => {
+  const trpcContext = trpc.useUtils();
+
+  const { mutateAsync, mutate, error, failureCount, isError, isSuccess, status } =
+    trpc.form.deleteFormSubmission.useMutation({
+      onSuccess: async () => {
+        await trpcContext.form.invalidate();
+      },
+    });
+
+  return { mutateAsync, mutate, error, failureCount, isError, isSuccess, status };
+};
+
