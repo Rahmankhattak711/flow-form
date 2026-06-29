@@ -17,6 +17,9 @@ export const createForm = z
     createdBy: z.string().uuid().describe("Form created by user id"),
     startDate: z.coerce.date().optional().nullable(),
     endDate: z.coerce.date().optional().nullable(),
+    paymentEnabled: z.boolean().optional(),
+    paymentAmount: z.number().int().optional().nullable(),
+    paymentCurrency: z.string().optional(),
   })
   .superRefine(dateRefine);
 
@@ -30,6 +33,9 @@ export const updateForm = z
     description: z.string().optional().nullable(),
     startDate: z.coerce.date().optional().nullable(),
     endDate: z.coerce.date().optional().nullable(),
+    paymentEnabled: z.boolean().optional(),
+    paymentAmount: z.number().int().optional().nullable(),
+    paymentCurrency: z.string().optional(),
   })
   .superRefine(dateRefine);
 

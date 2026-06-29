@@ -1,4 +1,4 @@
-import { pgTable, uuid, timestamp, jsonb, index } from "drizzle-orm/pg-core";
+import { pgTable, uuid, timestamp, jsonb, index, text } from "drizzle-orm/pg-core";
 import { formsTable } from "./form";
 
 export type FormSubmissionAnswers = Record<string, string | string[]>;
@@ -13,6 +13,8 @@ export const formSubmissionsTable = pgTable(
       })
       .notNull(),
     answers: jsonb("answers").$type<FormSubmissionAnswers>().notNull(),
+    paymentStatus: text("payment_status").default("pending").notNull(),
+    paymentSessionId: text("payment_session_id"),
     submittedAt: timestamp("submitted_at").defaultNow().notNull(),
   },
   (table) => [index("form_submissions_form_id_idx").on(table.formId)],

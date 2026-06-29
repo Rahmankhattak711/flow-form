@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, boolean, timestamp, integer } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { usersTable } from "./user";
 
@@ -14,6 +14,9 @@ export const formsTable = pgTable("forms", {
       onDelete: "cascade",
     })
     .notNull(),
+  paymentEnabled: boolean("payment_enabled").default(false).notNull(),
+  paymentAmount: integer("payment_amount"),
+  paymentCurrency: text("payment_currency").default("usd").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

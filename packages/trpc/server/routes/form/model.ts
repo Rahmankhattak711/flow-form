@@ -153,3 +153,21 @@ export const deleteFormFieldInputModel = z.object({
 export const getAllFormsInputModel = z.object({
   userId: z.string().uuid().describe("User id"),
 });
+
+export const deleteFormInputModel = z.object({
+  formId: z.string().uuid().describe("Form id"),
+});
+
+export const deleteFormOutputModel = z.object({
+  id: z.string().uuid().describe("Deleted Form id"),
+});
+
+export const deleteFormSubmissionInputModel = z.object({
+  submissionId: z.string().uuid().describe("Submission id"),
+  formId: z.string().uuid().describe("Form id"),
+});
+
+export const deleteFormSubmissionOutputModel = z.object({
+  id: z.string().uuid().describe("Deleted Submission id"),
+});
+

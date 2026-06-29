@@ -2,6 +2,7 @@ import db, { and, eq, inArray, sql } from "@repo/database";
 import { formsTable } from "@repo/database/models/form";
 import { formFieldsTable } from "@repo/database/models/form-field";
 import { formSubmissionsTable } from "@repo/database/models/form-submission";
+import Stripe from "stripe";
 import {
     CreateFormInputFieldType,
     CreatrFormInputType,
@@ -29,9 +30,13 @@ import {
     updateForm as updateFormSchema,
 } from "./model";
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "dummy_key", {
+  apiVersion: "2025-01-27.acacia" as any,
+});
+
 class FormService {
   public async createForm(payload: CreatrFormInputType) {
-    const { title, description, createdBy, startDate, endDate } = await createForm.parseAsync(payload);
+    const { title, description, createdBy, startDate, endDate, paymentEnabled, paymentAmount, paymentCurrency } = await createForm.parseAsync(payload);
 
     const result = await db
       .insert(formsTable)
@@ -41,6 +46,9 @@ class FormService {
         createdBy,
         startDate: startDate ?? null,
         endDate: endDate ?? null,
+        paymentEnabled: paymentEnabled ?? false,
+        paymentAmount: paymentAmount ?? null,
+        paymentCurrency: paymentCurrency ?? "usd",
       })
       .returning({
         id: formsTable.id,
@@ -63,6 +71,9 @@ class FormService {
         startDate: formsTable.startDate,
         endDate: formsTable.endDate,
         createdBy: formsTable.createdBy,
+        paymentEnabled: formsTable.paymentEnabled,
+        paymentAmount: formsTable.paymentAmount,
+        paymentCurrency: formsTable.paymentCurrency,
       })
       .from(formsTable)
       .where(eq(formsTable.createdBy, userId));
@@ -81,6 +92,9 @@ class FormService {
         startDate: formsTable.startDate,
         endDate: formsTable.endDate,
         createdBy: formsTable.createdBy,
+        paymentEnabled: formsTable.paymentEnabled,
+        paymentAmount: formsTable.paymentAmount,
+        paymentCurrency: formsTable.paymentCurrency,
       })
       .from(formsTable)
       .where(eq(formsTable.id, formId));
@@ -93,7 +107,7 @@ class FormService {
   }
 
   public async updateForm(payload: UpdateFormInputType) {
-    const { formId, userId, title, description, startDate, endDate } =
+    const { formId, userId, title, description, startDate, endDate, paymentEnabled, paymentAmount, paymentCurrency } =
       await updateFormSchema.parseAsync(payload);
 
     const updates: Record<string, unknown> = {};
@@ -101,6 +115,9 @@ class FormService {
     if (description !== undefined) updates.description = description;
     if (startDate !== undefined) updates.startDate = startDate;
     if (endDate !== undefined) updates.endDate = endDate;
+    if (paymentEnabled !== undefined) updates.paymentEnabled = paymentEnabled;
+    if (paymentAmount !== undefined) updates.paymentAmount = paymentAmount;
+    if (paymentCurrency !== undefined) updates.paymentCurrency = paymentCurrency;
 
     const [form] = await db
       .update(formsTable)
@@ -112,6 +129,9 @@ class FormService {
         description: formsTable.description,
         startDate: formsTable.startDate,
         endDate: formsTable.endDate,
+        paymentEnabled: formsTable.paymentEnabled,
+        paymentAmount: formsTable.paymentAmount,
+        paymentCurrency: formsTable.paymentCurrency,
       });
 
     if (!form) {
@@ -353,6 +373,43 @@ class FormService {
 
     return submissions;
   }
+
+  public async deleteForm(payload: { formId: string; userId: string }) {
+    const { formId, userId } = payload;
+    const result = await db
+      .delete(formsTable)
+      .where(and(eq(formsTable.id, formId), eq(formsTable.createdBy, userId)))
+      .returning({ id: formsTable.id });
+
+    if (!result || result.length === 0 || !result[0]?.id) {
+      throw new Error("Failed to delete form or you do not have permission");
+    }
+
+    return { id: result[0].id };
+  }
+
+  public async deleteFormSubmission(payload: { submissionId: string; formId: string; userId: string }) {
+    const { submissionId, formId, userId } = payload;
+    
+    const [form] = await db
+      .select({ id: formsTable.id })
+      .from(formsTable)
+      .where(and(eq(formsTable.id, formId), eq(formsTable.createdBy, userId)));
+
+    if (!form) throw new Error("Form not found or you do not have permission");
+
+    const result = await db
+      .delete(formSubmissionsTable)
+      .where(and(eq(formSubmissionsTable.id, submissionId), eq(formSubmissionsTable.formId, formId)))
+      .returning({ id: formSubmissionsTable.id });
+
+    if (!result || result.length === 0 || !result[0]?.id) {
+      throw new Error("Failed to delete submission");
+    }
+
+    return { id: result[0].id };
+  }
 }
 
 export default FormService;
+
