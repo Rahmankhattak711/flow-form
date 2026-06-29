@@ -13,6 +13,7 @@ export const PLANS = [
     cta: "Get Started",
     href: "/sign-up",
     highlighted: false,
+    comingSoon: false,
   },
   {
     name: "Pro",
@@ -26,9 +27,10 @@ export const PLANS = [
       "Priority support",
       "Export responses (CSV)",
     ],
-    cta: "Start Pro Trial",
+    cta: "Coming soon",
     href: "/sign-up",
     highlighted: true,
+    comingSoon: true,
   },
   {
     name: "Business",
@@ -42,9 +44,10 @@ export const PLANS = [
       "SSO & audit logs",
       "Dedicated success manager",
     ],
-    cta: "Contact Sales",
+    cta: "Coming soon",
     href: "/sign-up",
     highlighted: false,
+    comingSoon: true,
   },
 ] as const;
 
@@ -52,6 +55,7 @@ export const NAV_LINKS = [
   { label: "Features", href: "#features" },
   { label: "How it works", href: "#how-it-works" },
   { label: "Use cases", href: "#use-cases" },
+  { label: "Payments", href: "#payments" },
   { label: "Pricing", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
 ] as const;
@@ -165,6 +169,11 @@ export const FAQ_ITEMS = [
     question: "Is there a free plan?",
     answer:
       "Yes. Starter is free forever with up to 3 forms and 100 responses per month — enough to try FlowForm with real projects.",
+  },
+  {
+    question: "Can I collect payments through my forms?",
+    answer:
+      "Payment gateways are coming soon. You'll be able to accept payments via Stripe and other providers directly on your public forms.",
   },
   {
     question: "Can I export responses?",

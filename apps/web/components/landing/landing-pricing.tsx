@@ -20,12 +20,19 @@ export function LandingPricing() {
           <div
             key={plan.name}
             className={`relative flex flex-col rounded-2xl border p-8 ${
-              plan.highlighted
-                ? "border-orange-300 bg-linear-to-b from-orange-50 to-white shadow-xl shadow-orange-500/15 md:scale-[1.02]"
-                : "chai-card"
+              plan.comingSoon
+                ? "chai-card opacity-90"
+                : plan.highlighted
+                  ? "border-orange-300 bg-linear-to-b from-orange-50 to-white shadow-xl shadow-orange-500/15 md:scale-[1.02]"
+                  : "chai-card"
             }`}
           >
-            {plan.highlighted && (
+            {plan.comingSoon && (
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-neutral-800 text-white">
+                Coming soon
+              </span>
+            )}
+            {plan.highlighted && !plan.comingSoon && (
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full chai-gradient-bg text-white">
                 Most popular
               </span>
@@ -44,16 +51,25 @@ export function LandingPricing() {
                 </li>
               ))}
             </ul>
-            <Link
-              href={plan.href}
-              className={`mt-8 block text-center py-3 rounded-xl font-semibold text-sm transition ${
-                plan.highlighted
-                  ? "chai-gradient-bg text-white shadow-md shadow-orange-500/25 hover:opacity-95"
-                  : "border border-neutral-200 text-neutral-700 hover:border-orange-300 hover:bg-orange-50"
-              }`}
-            >
-              {plan.cta}
-            </Link>
+            {plan.comingSoon ? (
+              <span
+                className="mt-8 block text-center py-3 rounded-xl font-semibold text-sm border border-neutral-200 bg-neutral-50 text-neutral-500 cursor-not-allowed"
+                aria-disabled="true"
+              >
+                {plan.cta}
+              </span>
+            ) : (
+              <Link
+                href={plan.href}
+                className={`mt-8 block text-center py-3 rounded-xl font-semibold text-sm transition ${
+                  plan.highlighted
+                    ? "chai-gradient-bg text-white shadow-md shadow-orange-500/25 hover:opacity-95"
+                    : "border border-neutral-200 text-neutral-700 hover:border-orange-300 hover:bg-orange-50"
+                }`}
+              >
+                {plan.cta}
+              </Link>
+            )}
           </div>
         ))}
       </div>

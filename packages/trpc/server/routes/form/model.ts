@@ -170,4 +170,3 @@ export const deleteFormSubmissionInputModel = z.object({
 export const deleteFormSubmissionOutputModel = z.object({
   id: z.string().uuid().describe("Deleted Submission id"),
 });
-

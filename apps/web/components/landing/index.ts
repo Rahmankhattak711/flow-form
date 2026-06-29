@@ -3,6 +3,7 @@ export { LandingHeader } from "./landing-header";
 export { LandingHero } from "./landing-hero";
 export { LandingHowItWorks } from "./landing-how-it-works";
 export { LandingFeatures } from "./landing-features";
+export { LandingPaymentsComingSoon } from "./landing-payments-coming-soon";
 export { LandingUseCases } from "./landing-use-cases";
 export { LandingStats } from "./landing-stats";
 export { LandingTestimonials } from "./landing-testimonials";
