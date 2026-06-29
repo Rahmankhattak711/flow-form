@@ -15,16 +15,6 @@ export interface FormTemplate {
 
 export const formTemplates: FormTemplate[] = [
   {
-    id: "contact",
-    title: "Contact Form",
-    description: "Collect visitor info and messages.",
-    fields: [
-      { label: "Full name", labelKey: "full_name", type: "text", required: true, order: 1 },
-      { label: "Email address", labelKey: "email", type: "email", required: true, order: 2 },
-      { label: "Message", labelKey: "message", type: "textarea", required: true, order: 3 },
-    ],
-  },
-  {
     id: "feedback",
     title: "Feedback Survey",
     description: "Ask customers how their experience was.",
@@ -36,14 +26,29 @@ export const formTemplates: FormTemplate[] = [
     ],
   },
   {
-    id: "signup",
-    title: "Event Signup",
-    description: "Register attendees for your event.",
+    id: "job-application",
+    title: "Job Application",
+    description: "Collect applicant details and role preferences.",
     fields: [
       { label: "Full name", labelKey: "full_name", type: "text", required: true, order: 1 },
       { label: "Email", labelKey: "email", type: "email", required: true, order: 2 },
-      { label: "Phone number", labelKey: "phone", type: "phone", required: false, order: 3 },
-      { label: "Sessions to attend", labelKey: "sessions", type: "checkbox", required: false, order: 4, options: ["Morning session", "Afternoon session", "Networking dinner"] },
+      { label: "Phone number", labelKey: "phone", type: "phone", required: true, order: 3 },
+      { label: "Position applying for", labelKey: "position", type: "select", required: true, order: 4, options: ["Software Engineer", "Product Designer", "Marketing Manager", "Customer Support", "Other"] },
+      { label: "Years of experience", labelKey: "experience_years", type: "number", required: true, order: 5, placeholder: "e.g. 3" },
+      { label: "LinkedIn or portfolio URL", labelKey: "portfolio", type: "text", required: false, order: 6, placeholder: "https://" },
+      { label: "Why do you want to join us?", labelKey: "motivation", type: "textarea", required: true, order: 7 },
+    ],
+  },
+  {
+    id: "course-enrollment",
+    title: "Course Enrollment",
+    description: "Enroll students in a class or workshop.",
+    fields: [
+      { label: "Student name", labelKey: "student_name", type: "text", required: true, order: 1 },
+      { label: "Email", labelKey: "email", type: "email", required: true, order: 2 },
+      { label: "Course", labelKey: "course", type: "select", required: true, order: 3, options: ["Introduction to Web Dev", "UI/UX Fundamentals", "Data Analytics 101", "Digital Marketing"] },
+      { label: "Preferred start date", labelKey: "start_date", type: "date", required: false, order: 4 },
+      { label: "Experience level", labelKey: "experience", type: "radio", required: true, order: 5, options: ["Beginner", "Intermediate", "Advanced"] },
     ],
   },
 ];

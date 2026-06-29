@@ -12,6 +12,7 @@ import {
   LandingHeader,
   LandingHero,
   LandingHowItWorks,
+  LandingPaymentsComingSoon,
   LandingPricing,
   LandingStats,
   LandingTestimonials,
@@ -47,6 +48,7 @@ export default function Home() {
       <LandingHero />
       <LandingHowItWorks />
       <LandingFeatures />
+      <LandingPaymentsComingSoon />
       <LandingUseCases />
       <LandingStats />
       <LandingTestimonials />

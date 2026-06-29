@@ -2,8 +2,11 @@
 
 import { BarChart3, FileText, TrendingUp, Users, ArrowRight, Search } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { FormStatusPieChart } from "~/components/dashboard/form-status-pie-chart";
+import { ResponsesBarChart } from "~/components/dashboard/responses-bar-chart";
 import { useGetAllForms, useGetSubmissionStats } from "~/hooks/api/form";
+import { buildFormStatusChart, buildResponsesByFormChart } from "~/lib/chart-data";
 
 export default function Page() {
   const { data: forms, isLoading } = useGetAllForms();
@@ -31,6 +34,12 @@ export default function Page() {
     row.title.toLowerCase().includes(search.toLowerCase()) ||
     row.formId.toLowerCase().includes(search.toLowerCase())
   );
+
+  const responsesChartData = useMemo(
+    () => buildResponsesByFormChart(forms, submissionStats?.byFormId, 12),
+    [forms, submissionStats?.byFormId],
+  );
+  const formStatusChartData = useMemo(() => buildFormStatusChart(forms), [forms]);
 
   const stats = [
     {
@@ -112,6 +121,18 @@ export default function Page() {
             </div>
           );
         })}
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+        <div className="xl:col-span-2">
+          <ResponsesBarChart
+            data={responsesChartData}
+            title="Response volume by form"
+            description="Compare how each form is performing"
+          />
+        </div>
+        <FormStatusPieChart data={formStatusChartData} />
       </div>
 
       {/* Table Card */}
